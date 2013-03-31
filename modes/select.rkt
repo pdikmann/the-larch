@@ -16,19 +16,23 @@
 
 ;; ============================================================ Hooks
 (define (start)
-  (set! mode-list (get-modes)))
+  (set! mode-list
+        (for/list ([m (get-modes)]
+                   #:when (not (member m '(select dummy))))
+          m)))
 
 (define (draw)
+  ;; ortho projection
   (gl-matrix-mode 'projection)
   (gl-load-identity)
   (gl-ortho 0 (window-width main-window)
             (window-height main-window) 0
             0 10)
-  ;;
+  ;; model view
   (gl-matrix-mode 'modelview)
   (gl-load-identity)
   (gl-color .4 .8 .1 1)
-  (gl-scale 40
+  (gl-scale 40 ; font size
             40
             1)
   (gl-translate 0

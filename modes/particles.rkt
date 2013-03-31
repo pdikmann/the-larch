@@ -7,11 +7,14 @@
          "../lib/gl-geometry.rkt"
          "../lib/gl-extend.rkt"
          "../lib/gl-letters.rkt"
-         (only-in "../lib/utils.rkt"
-                  x y z)
          sgl
          (only-in plot/utils
-                  v+ v*))
+                  v+
+                  v-
+                  v*
+                  vmag)
+         (only-in "../lib/utils.rkt"
+                  x y z))
 
 ;; ============================================================ Model
 (struct part (position direction age)
@@ -30,7 +33,7 @@
                            0
                            (- (random) .5))
                    (vector 0 ; dir
-                           (- (+ .3 (random)))
+                           -.5 ;(- (+ .3 (random)))
                            0)
                    0))
   ;; (set! ticles (cons (part (vector 0 0 0)
@@ -45,8 +48,19 @@
                                 dt)))
   (set-part-age! p (+ (part-age p)
                       dt))
-  (when (> (part-age p) 3)
+  (when (> (part-age p) 8)
     (hash-remove! ticles-hash n)))
+
+(define (close-triplet p)
+  (with-handlers ([exn:fail? (lambda (x) '())]) ; sometimes there are less than 3 particles
+    (map (lambda (pair)
+           (hash-ref ticles-hash (car pair)))
+         (take (sort (hash-map ticles-hash
+                               (lambda (k v)
+                                 (cons k (vmag (v- (part-position v)
+                                                   (part-position p))))))
+                     < #:key cdr)
+               3))))
 
 ;; ============================================================ Main
 (define (start)
@@ -55,14 +69,21 @@
   (set! ticles-hash (make-hash)))
 
 (define (draw)
-  ;; quad at each particle
   (for ([p (hash-values ticles-hash)])
+    ;; quad at each particle
+    (gl-color 0 0 0 1)
     (with-gl-matrix
      (gl-translate (x (part-position p))
                    (y (part-position p))
                    (z (part-position p)))
-     (gl-scale .1 .1 .1)
-     (gl-quad))))
+     (gl-scale .02 .02 .02)
+     (gl-quad))
+    ;; triangle for each triples
+    (gl-color 1 0 0 1)
+    (gl-begin 'triangles)
+    (for ([tp (close-triplet p)])
+      (apply gl-vertex (vector->list (part-position tp))))
+    (gl-end)))
 
 (define (tick dt)
   ;; spawning
