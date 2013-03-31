@@ -6,7 +6,9 @@
          sgl/gl
          sgl/gl-vectors)
 
-(provide gl-quad
+(provide gl-quad ; primitives
+         gl-grid
+         ;; compiled
          make-textured-quad
          aligned-textured-quad
          aligned-solid-quad
@@ -15,6 +17,17 @@
          quad)
 
 ;; ============================================================ base geometries
+
+(define (gl-grid)
+  (gl-begin 'lines)
+  (let ([spread 3])
+    (for ([x (range (- spread) (+ 1 spread))]
+          [z (range (- spread) (+ 1 spread))])
+      (for ([toggle (list (- spread) spread)])
+        (gl-vertex x 0 toggle))
+      (for ([toggle (list (- spread) spread)])
+        (gl-vertex toggle 0 z))))
+  (gl-end))
 
 (define (gl-quad)
   (gl-begin 'quads)

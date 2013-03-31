@@ -6,28 +6,26 @@
          (struct-out window)
          (rename-out [*config* main-window]))
 
-;; ------------------------------------------------------------
-;; config
+;; ============================================================ config
 (struct window (width height label))
 (define *config* (window 512
                          600
                          "No. 1: The Larch"))
 
-;; ------------------------------------------------------------
-;; implementation
+;; ============================================================
 (require racket/gui
          sgl
          sgl/gl
          sgl/gl-vectors)
 
-;; a window that kills racket on closing
+;; the window
 (define killer-frame%
   (class frame%
     (super-new)
     (define/augment (on-close)
       (exit))))
 
-;; the handy canvas
+;; the canvas
 (define gl-canvas%
   (class canvas%
     (inherit with-gl-context
@@ -35,27 +33,23 @@
              get-parent
              refresh)
     (super-new (style '(gl no-autoclear)))
-    
-    (define auth? #f)                   ; authorize refresh
+    ;; ------------------------------------------------------------ private
+    ;; authorized refresh
+    (define auth? #f)   
     (define (auth-grant) (set! auth? #t))
     (define (auth-remove) (set! auth? #f))
-    (define/public (auth-refresh)
-      (auth-grant)
-      (refresh))
-
-    ;; camera helper math
-    ;; (define (glu-perspective fovy aspect znear zfar)
-    ;;   (let ((f (/ 1 (tan (/ (* fovy (/ pi 180)) 2))))
-    ;;         (g (- znear zfar)))
-    ;;     (gl-mult-matrix
-    ;;      (vector->gl-double-vector 
-    ;;       (vector
-    ;;        (/ f aspect) 0 0 0
-    ;;        0 f 0 0
-    ;;        0 0 (/ (+ znear zfar) g) -1
-    ;;        0 0 (/ (* 2 znear zfar) g) 0)))))
-
-    ;;initialization procedure (also occurs on resize)
+    ;;drawing function, replacable
+    (define paint-fn
+      (lambda ()
+        (gl-clear-color 1 1 1 0.0)
+        (gl-clear 'color-buffer-bit 'depth-buffer-bit)
+        ;;
+        (gl-matrix-mode 'modelview)
+        (gl-load-identity)))
+    ;; events, replacable
+    (define on-event-fn (lambda (e) #t))
+    (define on-char-fn (lambda (e) #t))
+    ;; overrides
     (define/override (on-size width height)
       (with-gl-context
        (lambda ()
@@ -77,32 +71,13 @@
          ;; model matrix
          (gl-matrix-mode 'modelview)
          (gl-load-identity)
+         ;; enables
+         (gl-enable 'depth-test)
          ;;(gl-enable 'blend)
          ;;(gl-blend-func 'src-alpha 'one-minus-src-alpha)
          ;;(gl-enable 'cull-face 'lighting 'texture-2d 'depth-test)
          ;;(gl-enable 'scissor-test)
          )))
-
-    ;;drawing function, replacable by new-draw-fn
-    (define paint-fn
-      (lambda ()
-        (gl-clear-color 1 1 1 0.0)
-        (gl-clear 'color-buffer-bit 'depth-buffer-bit)
-        ;;
-        (gl-matrix-mode 'modelview)
-        (gl-load-identity)))
-
-    (define on-event-fn (lambda (e) #t))
-    (define on-char-fn (lambda (e) #t))
-
-    ;; replace the draw-fn that is used in on-paint
-    (define/public (paint-with fn) (set! paint-fn fn))
-
-    ;; replace the fn called on any mouse event
-    (define/public (on-event-with fn) (set! on-event-fn fn))
-
-    ;; replace the fn called on any keyboard event
-    (define/public (on-char-with fn) (set! on-char-fn fn))
 
     (define/override (on-paint)
       (when auth?
@@ -114,9 +89,23 @@
         (auth-remove)))
 
     (define/override (on-event event) (on-event-fn event))
-    (define/override (on-char event) (on-char-fn event))))
+    (define/override (on-char event) (on-char-fn event))
+    ;; ------------------------------------------------------------ public
+    ;; authorized refresh
+    (define/public (auth-refresh)
+      (auth-grant)
+      (refresh))
+    ;; replace the draw-fn that is used in on-paint
+    (define/public (paint-with fn)
+      (set! paint-fn fn))
+    ;; replace the fn called on any mouse event
+    (define/public (on-event-with fn)
+      (set! on-event-fn fn))
+    ;; replace the fn called on any keyboard event
+    (define/public (on-char-with fn)
+      (set! on-char-fn fn))))
 
-;; ------------------------------------------------------------
+;; ============================================================
 ;; instantiation
 (define canvas #f)
 (define frame #f)
