@@ -48,11 +48,11 @@
 (define (keyboard e)
   (let ([key (send e get-key-code)])
     (case key
-      [(up) (set! selection (modulo (+ (- 2 (length mode-list))
-                                         selection)
-                                      (length mode-list)))]
-      [(down) (set! selection (modulo (+ 1 selection)
+      [(up) (set! selection (modulo (+ -1 (length mode-list)
+                                       selection)
                                     (length mode-list)))]
+      [(down) (set! selection (modulo (+ 1 selection)
+                                      (length mode-list)))]
       [(#\  #\) (invoke-mode (list-ref mode-list selection))]
       [else (printf "~a\n" key)])))
 

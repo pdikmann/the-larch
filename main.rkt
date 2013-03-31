@@ -12,6 +12,7 @@
          "lib/mode.rkt"
          "modes/select.rkt"
          "modes/quad.rkt"
+         "modes/particles.rkt"
          ;; temporary: for drawing
          sgl)
 
