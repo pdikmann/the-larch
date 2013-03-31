@@ -14,7 +14,7 @@
 (struct mode (start quit draw tick char)) ; mode hooks
 
 (define register (make-hash))
-(define current 'default)
+(define current 'dummy)
 
 ;; ============================================================
 (define (current-mode)
@@ -51,5 +51,4 @@
   ((mode-char (current-mode)) e))
 
 ;; ============================================================ Go!
-(register-mode 'default)
-
+(register-mode 'dummy)

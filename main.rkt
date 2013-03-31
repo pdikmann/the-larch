@@ -8,9 +8,10 @@
 (require "lib/gl-window.rkt"    ; frame
          "lib/gl-timer.rkt"     ; updates & refresh
          "lib/gl-geometry.rkt"  ; GL collection
-         ;; ---------------- moes
-         "modes/mode.rkt"
-         "modes/m-quad.rkt"
+         ;; ---------------- modes
+         "lib/mode.rkt"
+         "modes/select.rkt"
+         "modes/quad.rkt"
          ;; temporary: for drawing
          sgl)
 
@@ -20,7 +21,7 @@
    (class object%
      (super-new)
      ;; ------------------------ data
-     (define rotation (/ pi 2))
+     (define rotation (/ pi -2))
      (define velocity 0)
      (define turn-speed (/ pi 60))
      ;; ------------------------ public
@@ -41,10 +42,10 @@
                           (send canvas get-height))
                        .1 10)
        (gl-look-at (* (cos rotation) 5)
-                   2
+                   -2
                    (* (sin rotation) 5)
                    0 0 0
-                   0 1 0)))))
+                   0 -1 0)))))
 
 ;; ============================================================ Events
 (define (keyboard e)
@@ -55,6 +56,7 @@
       [(left) (send camera turn 'left)]
       [(right) (send camera turn 'right)]
       [(release) (send camera stop-moving)]
+      [(escape) (invoke-mode 'select)]
       [else (mode-key e)])))
 
 (define (tick)
@@ -76,6 +78,7 @@
   )
 
 ;; ============================================================ Go!
+(invoke-mode 'select)
 (send canvas paint-with tick)
 (send canvas on-char-with keyboard)
 (send timer start 16)

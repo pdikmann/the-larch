@@ -73,8 +73,9 @@
          (gl-load-identity)
          ;; enables
          (gl-enable 'depth-test)
+         (gl-enable 'blend)
          ;;(gl-enable 'blend)
-         ;;(gl-blend-func 'src-alpha 'one-minus-src-alpha)
+         (gl-blend-func 'src-alpha 'one-minus-src-alpha)
          ;;(gl-enable 'cull-face 'lighting 'texture-2d 'depth-test)
          ;;(gl-enable 'scissor-test)
          )))
