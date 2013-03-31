@@ -1,11 +1,20 @@
 #lang racket
 
-(require "lib/gl-window.rkt"
-         "lib/gl-timer.rkt"
-         "lib/gl-geometry.rkt"
+;; No. 1: The Larch
+;; is a 3d viewer
+;; that lets you view your generative shit
+;; easily extendable by sandboxing visuals into 'modes'
+
+(require "lib/gl-window.rkt"    ; frame
+         "lib/gl-timer.rkt"     ; updates & refresh
+         "lib/gl-geometry.rkt"  ; GL collection
+         ;; ---------------- moes
+         "modes/mode.rkt"
+         "modes/m-quad.rkt"
          ;; temporary: for drawing
          sgl)
 
+;; ============================================================ model
 (define camera
   (new
    (class object%
@@ -14,7 +23,6 @@
      (define rotation (/ pi 2))
      (define velocity 0)
      (define turn-speed (/ pi 60))
-     ;; ------------------------ private
      ;; ------------------------ public
      (define/public (update)
        (set! rotation (+ rotation
@@ -38,6 +46,7 @@
                    0 0 0
                    0 1 0)))))
 
+;; ============================================================ Events
 (define (keyboard e)
   (let ([key (send e get-key-code)]
         ;;[release (send e get-key-release-code)]
@@ -45,13 +54,11 @@
     (case key
       [(left) (send camera turn 'left)]
       [(right) (send camera turn 'right)]
-      [(release) (send camera stop-moving)])))
+      [(release) (send camera stop-moving)]
+      [else (mode-key e)])))
 
-(define (draw)
-  ;; (let ([c (/ (modulo (send timer get-frames)
-  ;;                     256)
-  ;;             255)])
-  ;;   (gl-clear-color c c c 1))
+(define (tick)
+  ;; clear
   (gl-clear-color 1 1 1 1)
   (gl-clear 'color-buffer-bit 'depth-buffer-bit)
   ;; camera
@@ -60,12 +67,15 @@
   ;; model
   (gl-matrix-mode 'modelview)
   (gl-load-identity)
-  ;;
-  (gl-color 1 0 1 1)
-  (gl-quad)
+  ;; base
   (gl-color 0 0 0 1)
-  (gl-grid))
+  (gl-grid)
+  ;; mode
+  (mode-tick (send timer get-delta-time))
+  (mode-draw)
+  )
 
-(send canvas paint-with draw)
+;; ============================================================ Go!
+(send canvas paint-with tick)
 (send canvas on-char-with keyboard)
 (send timer start 16)
