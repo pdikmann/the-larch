@@ -29,11 +29,11 @@
 (define (spawn-part)
   (hash-set! ticles-hash
              (gensym)
-             (part (vector (- (random) .5) ; pos
+             (part (vector (* 5 (- (random) .5)) ; pos
                            0
                            (- (random) .5))
                    (vector 0 ; dir
-                           -.5 ;(- (+ .3 (random)))
+                           -.8 ;(- (+ .3 (random)))
                            0)
                    0))
   ;; (set! ticles (cons (part (vector 0 0 0)
