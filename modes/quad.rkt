@@ -1,6 +1,6 @@
 #lang racket
 
-;; m-quad.rkt
+;; quad.rkt
 ;; a mode that draws a rotating quad
 
 (require "../lib/mode.rkt"

@@ -1,7 +1,7 @@
 #lang racket
 
-;; m-quad.rkt
-;; a mode that draws a rotating quad
+;; particles.rkt
+;; a mode that plots particles
 
 (require "../lib/mode.rkt"
          "../lib/gl-geometry.rkt"
