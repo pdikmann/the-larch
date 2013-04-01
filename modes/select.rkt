@@ -1,6 +1,6 @@
 #lang racket
 
-;; default.rk
+;; select.rkt
 ;; one mode to rule them all
 
 (require "../lib/gl-window.rkt" ; for width/height in gl-ortho
