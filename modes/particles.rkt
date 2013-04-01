@@ -62,6 +62,18 @@
                      < #:key cdr)
                3))))
 
+(define (next-up-triplet p)
+  (with-handlers ([exn:fail? (lambda (x) '())]) ; sometimes there are less than 3 particles
+    (map (lambda (pair)
+           (hash-ref ticles-hash (car pair)))
+         (take (filter (lambda (pair) (negative? (cdr pair)))
+                       (sort (hash-map ticles-hash
+                                       (lambda (k v)
+                                         (cons k (y (v- (part-position v)
+                                                        (part-position p))))))
+                             > #:key cdr))
+               3))))
+
 ;; ============================================================ Main
 (define (start)
   (set! spawn-timer 0)
@@ -81,7 +93,9 @@
     ;; triangle for each triples
     (gl-color 1 0 0 1)
     (gl-begin 'triangles)
-    (for ([tp (close-triplet p)])
+    (for (;;[tp (close-triplet p)]
+          [tp (next-up-triplet p)]
+          )
       (apply gl-vertex (vector->list (part-position tp))))
     (gl-end)))
 
